@@ -16,6 +16,7 @@ if not os.path.exists(local_filename):
     with open(local_filename, 'wb') as f:
         f.write(response.content)
 df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8')
+df = df.astype({"phone": "str"})
 if 'nameSet' in df.columns and 'keyWords' in df.columns:
     df.drop(['nameSet', 'keyWords'], axis=1, inplace=True)
 df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
@@ -34,15 +35,19 @@ def add_contact():
         ]
         for i in range(len(data_to_append)):
             if data_to_append[i] == '':
-                data_to_append[i] = None
+                data_to_append[i] = "Інформація відсутня"
         if not data_to_append[3]:
             messagebox.showerror("Помилка", "обов'язково введіть ім'я")
+            return
+        
         existing_data = []
         entry5_value = entry5.get()  # Отримати значення з Entry5
-        digits_only = re.sub(r'\D', '', entry5_value)
-        if not len(digits_only) in [10, 12] or (len(digits_only) == 12 and not digits_only.startswith('380')):
-            messagebox.showerror("Помилка", "Неправильний формат номеру!")
-            return  # Повернутися, якщо введене значення не відповідає вимогам
+        phone_numbers = entry5_value.split(",")
+        for phone_number in phone_numbers:
+            digits_only = re.sub(r'\D', '', phone_number)
+            if not len(digits_only) in [10, 12] or (len(digits_only) == 12 and not digits_only.startswith('380')):
+                messagebox.showerror("Помилка", "Неправильний формат номеру!")
+                return
         if not pattern2.match(data_to_append[5]):
             messagebox.showerror("Помилка", "Неправильний формат електронної пошти!")
             return
@@ -50,6 +55,8 @@ def add_contact():
             existing_data = [line.strip().split(';') for line in f.readlines()]
 
         existing_data.append(data_to_append)
+
+        data_to_append[4] = ",".join(phone_numbers)
 
         with open(local_filename, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f, delimiter=';')
@@ -86,7 +93,24 @@ def help_func():
     messagebox.showinfo(title="saygex", message="довідка")
 
 def find_contact():
-    messagebox.showinfo(".")    
+    data_to_search = entry_prof.get()
+    if data_to_search in df["fullName"].values:
+        contact_info = df[df["fullName"] == data_to_search].copy()
+        contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
+        label4.config(text=contact_info.to_csv(index=False, sep='\t'))
+    elif data_to_search in df["phone"].values:
+        contact_info = df[df["phone"] == data_to_search].copy()
+        contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
+        label4.config(text=contact_info.to_csv(index=False, sep='\t'))
+    elif data_to_search in df["email"].values:
+        contact_info = df[df["email"] == data_to_search].copy()
+        contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
+        label_text = contact_info.to_string(index=False, header=True)
+        label4.config(text=label_text)
+    else:
+        label4.config(text="Контакт не знайдено")
+
+
 
 def back_to_main():
     new_window.destroy()
@@ -141,7 +165,10 @@ entry_prof = Entry(root)
 entry_prof.grid(row=0, column=1, pady=10, padx=10)
 
 button1 = Button(root, text="Validate", command=find_contact)
-button1.grid(row=7, column=1, pady=10, padx=10)
+button1.grid(row=3, column=1, pady=10, padx=10)
+
+label4 = Label(root, text="")
+label4.grid(row=4,column=1, pady=10, padx=10)
 
 root.config(menu=menu_bar)
 root.mainloop()
