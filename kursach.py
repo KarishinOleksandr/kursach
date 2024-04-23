@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import *
+from tkinter import Tk, Canvas, Scrollbar, VERTICAL
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
@@ -21,8 +22,6 @@ if 'nameSet' in df.columns and 'keyWords' in df.columns:
     df.drop(['nameSet', 'keyWords'], axis=1, inplace=True)
 df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
 pd.options.display.float_format = '{:.0f}'.format
-
-
 
 def add_contact():
     root.withdraw()
@@ -78,13 +77,46 @@ def add_contact():
     bitn1 = Button(new_window, text="Додати", command=add1)
     bitn1.grid(row=7, column=1, pady=10, padx=10)
 
-
-
 def redact():
     messagebox.showinfo(".")
 
 def show_contact():
-    messagebox.showinfo(".")
+    root.withdraw()
+    global new_window
+    new_window = NewWindow()
+
+    sorted_df = df.sort_values("fullName")
+    sorted_df = sorted_df.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім`я", "phone": "Номер", "email": "ел-пошта"})
+
+    text_output = ""
+
+    for index, row in sorted_df.iterrows():
+        text_output += f"Назва організації: {row['Назва організаціїї']}\n"
+        text_output += f"Ім`я та прізвище: {row['Прізвище, Ім`я']}\n"  
+        text_output += f"Посада: {row['Посада']}\n"
+        text_output += f"Відділ: {row['Відділ']}\n"
+        text_output += f"Номер: {row['Номер']}\n"
+        text_output += f"Електронна пошта: {row['ел-пошта']}\n"
+        text_output += "-" * 50 + "\n"  
+
+    canvas = Canvas(new_window, height=400, width=500)
+    canvas.pack(side="left", fill="both", expand=True)
+
+    scrollbar = Scrollbar(new_window, command=canvas.yview)
+    scrollbar.pack(side="right", fill="y")
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    frame = Frame(canvas)
+    canvas.create_window((0, 0), window=frame, anchor='nw')
+
+    for i, line in enumerate(text_output.split('\n')):
+        label = Label(frame, text=line)
+        label.grid(row=i, column=0, sticky='w')
+
+    frame.update_idletasks()
+
+    canvas.configure(scrollregion=canvas.bbox("all"))
 
 def delete_func():
     messagebox.showinfo(".")    
@@ -94,23 +126,28 @@ def help_func():
 
 def find_contact():
     data_to_search = entry_prof.get()
-    if data_to_search in df["fullName"].values:
-        contact_info = df[df["fullName"] == data_to_search].copy()
+    if data_to_search:
+        if data_to_search in df["fullName"].values:
+            contact_info = df[df["fullName"] == data_to_search].copy()
+        elif data_to_search in df["phone"].values:
+            contact_info = df[df["phone"] == data_to_search].copy()
+        elif data_to_search in df["email"].values:
+            contact_info = df[df["email"] == data_to_search].copy()
+        else:
+            label4.config(text="Контакт не знайдено")
+            return
+
         contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
-        label4.config(text=contact_info.to_csv(index=False, sep='\t'))
-    elif data_to_search in df["phone"].values:
-        contact_info = df[df["phone"] == data_to_search].copy()
-        contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
-        label4.config(text=contact_info.to_csv(index=False, sep='\t'))
-    elif data_to_search in df["email"].values:
-        contact_info = df[df["email"] == data_to_search].copy()
-        contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
-        label_text = contact_info.to_string(index=False, header=True)
-        label4.config(text=label_text)
+        
+        text_output = ""
+        for index, row in contact_info.iterrows():
+            for column, value in row.items():
+                text_output += f"{column}: {value}\n"
+            text_output += "\n"
+
+        label4.config(text=text_output)
     else:
-        label4.config(text="Контакт не знайдено")
-
-
+        label4.config(text="Введіть дані для пошуку")
 
 def back_to_main():
     new_window.destroy()
@@ -120,14 +157,14 @@ class NewWindow(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Нове вікно")
+        self.geometry("800x400") 
 
         def on_closing():
             self.destroy()
             root.deiconify()
 
-
         self.protocol("WM_DELETE_WINDOW", on_closing)
-
+        
         menu_bar = tk.Menu(self)
 
         function_menu = tk.Menu(menu_bar, tearoff=0)
@@ -147,6 +184,7 @@ class NewWindow(tk.Tk):
 
 root = tk.Tk()
 root.title("Телефонний довідник")
+root.geometry("300x200")  
 
 menu_bar = tk.Menu(root)
 
