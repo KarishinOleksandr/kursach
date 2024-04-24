@@ -21,6 +21,7 @@ if 'nameSet' in df.columns and 'keyWords' in df.columns:
     df.drop(['nameSet', 'keyWords'], axis=1, inplace=True)
 df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
 pd.options.display.float_format = '{:.0f}'.format
+contact_found = False
 
 def add_contact():
     root.withdraw()
@@ -75,11 +76,6 @@ def add_contact():
     entry6.grid(row=5, column=1, pady=10, padx=10)
     bitn1 = Button(new_window, text="Додати", command=add1)
     bitn1.grid(row=7, column=1, pady=10, padx=10)
-
-def redact():
-    root.withdraw()
-    global new_window
-    new_window = NewWindow()
 
 
 def show_contact():
@@ -158,6 +154,7 @@ def help_func():
     messagebox.showinfo(title="saygex", message="довідка")
 
 def find_contact():
+    global contact_found
     data_to_search = entry_prof.get()
     if data_to_search:
         if data_to_search in df["fullName"].values:
@@ -179,12 +176,40 @@ def find_contact():
             text_output += "\n"
 
         label4.config(text=text_output)
+        contact_found = True
+        update()
     else:
         label4.config(text="Введіть дані для пошуку")
+
+def redact():
+    root.withdraw()
+    global new_window
+    new_window = NewWindow()
+    global entry_prof, label4, contact_found
+    
+    def redact1():
+        pass
+
+    if contact_found:
+        entry2 = Entry(new_window)
+        entry2.grid(row=5, column=0, padx=10, pady=10)
+
+        btn2 = Button(new_window, text="valid", command=redact1)
+        btn2.grid(row=6, column=0, padx=10, pady=10)
+
+        label5 = Label(new_window, text = "d")
+        label5.grid(row=7, column=0, padx=10, pady=10)
 
 def back_to_main():
     new_window.destroy()
     root.deiconify()  
+
+def update():
+    global root
+
+    btn1 = Button(root, text="Redact", command=redact)
+    btn1.grid(row=3, column=2, pady=10, padx=10)
+
 
 class NewWindow(tk.Tk):
     def __init__(self):
