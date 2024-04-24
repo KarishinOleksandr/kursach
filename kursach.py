@@ -3,7 +3,6 @@ from tkinter import messagebox
 from tkinter import *
 from tkinter import Tk, Canvas, Scrollbar, VERTICAL
 import pandas as pd
-from bs4 import BeautifulSoup
 import requests
 import csv
 import os
@@ -78,7 +77,10 @@ def add_contact():
     bitn1.grid(row=7, column=1, pady=10, padx=10)
 
 def redact():
-    messagebox.showinfo(".")
+    root.withdraw()
+    global new_window
+    new_window = NewWindow()
+
 
 def show_contact():
     root.withdraw()
@@ -119,7 +121,38 @@ def show_contact():
     canvas.configure(scrollregion=canvas.bbox("all"))
 
 def delete_func():
-    messagebox.showinfo(".")    
+    root.withdraw()
+    global new_window
+    new_window = NewWindow()
+    
+    def delete1():
+        data_to_search = entry2.get()
+        if data_to_search:
+            # Пошук рядків, що відповідають умові
+            if data_to_search in df["fullName"].values:
+                df.drop(df[df["fullName"] == data_to_search].index, inplace=True)
+            elif data_to_search in df["phone"].values:
+                df.drop(df[df["phone"] == data_to_search].index, inplace=True)
+            elif data_to_search in df["email"].values:
+                df.drop(df[df["email"] == data_to_search].index, inplace=True)
+            else:
+                label3.config(text="Контакт не знайдено")
+                return
+            
+            df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
+        else:
+            label3.config(text="Введіть дані для пошуку")
+
+
+    entry2 = Entry(new_window)
+    entry2.grid(row=1, column=0, padx=10, pady=10)
+
+    btn1 = Button(new_window, text="Validate", command=delete1)
+    btn1.grid(row=2, column=0, padx=10, pady=10)
+
+    label3 = Label(new_window, text="")
+    label3.grid(row=3, column=0, padx=10, pady=10)
+    
 
 def help_func():
     messagebox.showinfo(title="saygex", message="довідка")
