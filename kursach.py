@@ -15,12 +15,11 @@ if not os.path.exists(local_filename):
     response = requests.get(url)
     with open(local_filename, 'wb') as f:
         f.write(response.content)
-df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8')
+df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
 df = df.astype({"phone": "str"})
 if 'nameSet' in df.columns and 'keyWords' in df.columns:
     df.drop(['nameSet', 'keyWords'], axis=1, inplace=True)
 df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
-pd.options.display.float_format = '{:.0f}'.format
 contact_found = False
 
 def add_contact():
@@ -36,9 +35,12 @@ def add_contact():
             if data_to_append[i] == '':
                 data_to_append[i] = "Інформація відсутня"
         if not data_to_append[3]:
-            messagebox.showerror("Помилка", "обов'язково введіть ім'я")
+            messagebox.showerror("Помилка", "Обов'язково введіть ім'я")
             return
-        
+        if data_to_append[3] in df["fullName"].values:
+            messagebox.showerror("Помилка", "Контак з таким ім'ям вже існує")
+            return
+
         existing_data = []
         entry5_value = entry5.get()  # Отримати значення з Entry5
         phone_numbers = entry5_value.split(",")
@@ -82,6 +84,7 @@ def show_contact():
     root.withdraw()
     global new_window
     new_window = NewWindow()
+    df.update()
 
     sorted_df = df.sort_values("fullName")
     sorted_df = sorted_df.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім`я", "phone": "Номер", "email": "ел-пошта"})
@@ -155,6 +158,7 @@ def help_func():
 
 def find_contact():
     global contact_found
+    df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
     data_to_search = entry_prof.get()
     if data_to_search:
         if data_to_search in df["fullName"].values:
