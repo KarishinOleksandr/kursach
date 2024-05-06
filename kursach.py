@@ -84,8 +84,8 @@ def show_contact():
     root.withdraw()
     global new_window
     new_window = NewWindow()
-    df.update()
-
+    df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
+    
     sorted_df = df.sort_values("fullName")
     sorted_df = sorted_df.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім`я", "phone": "Номер", "email": "ел-пошта"})
 
@@ -157,7 +157,7 @@ def help_func():
     messagebox.showinfo(title="saygex", message="довідка")
 
 def find_contact():
-    global contact_found
+    global contact_found, contact_info
     df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
     data_to_search = entry_prof.get()
     if data_to_search:
@@ -189,20 +189,90 @@ def redact():
     root.withdraw()
     global new_window
     new_window = NewWindow()
-    global entry_prof, label4, contact_found
+    global entry_prof, label4, contact_found, contact_info
     
     def redact1():
-        pass
+        pattern2 = re.compile(r'\b[A-Za-z]\w*@[A-Za-z]+\.[A-Za-z]{2,}\b')
+        contact_info1 = [
+            entry2.get(), entry3.get(), entry4.get(), entry5.get(), entry6.get(), entry7.get()
+        ]
+        for i in range(len(contact_info1)):
+            if contact_info1[i] == '':
+                contact_info1[i] = "Інформація відсутня"
+        if not contact_info1[3]:
+            messagebox.showerror("Помилка", "Обов'язково введіть ім'я")
+            return
+        if contact_info1[3] in df["fullName"].values:
+            messagebox.showerror("Помилка", "Контакт з таким ім'ям вже існує")
+            return
+        
+        existing_data = []
+        entry6_value = entry6.get()  # Отримати значення з Entry5
+        phone_numbers = entry6_value.split(",")
+        for phone_number in phone_numbers:
+            digits_only = re.sub(r'\D', '', phone_number)
+            if not len(digits_only) in [10, 12] or (len(digits_only) == 12 and not digits_only.startswith('380')):
+                messagebox.showerror("Помилка", "Неправильний формат номеру!")
+                return
+        if not pattern2.match(contact_info1[5]):
+            messagebox.showerror("Помилка", "Неправильний формат електронної пошти!")
+            return
+        
+        with open(local_filename, "r", encoding="utf-8") as f:
+            existing_data = [line.strip().split(';') for line in f.readlines()]
+        
+        # Знайти попередній рядок для видалення
+        row_to_delete = None
+        for i, row in enumerate(existing_data):
+            if row[:3] == contact_info1[:3]:  # Шукаємо рядок, який має ті ж перші три елементи
+                row_to_delete = i
+                break
+        
+        # Якщо знайдено рядок для видалення, видаляємо його
+        if row_to_delete is not None:
+            del existing_data[row_to_delete]
+        
+        # Додати новий рядок з інформацією про контакт
+        existing_data.append(contact_info1)
+        
+        with open(local_filename, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f, delimiter=';')
+            writer.writerows(existing_data)
+
 
     if contact_found:
         entry2 = Entry(new_window)
-        entry2.grid(row=5, column=0, padx=10, pady=10)
+        entry2.delete(0, tk.END)
+        entry2.insert(0, contact_info.iloc[0]["Назва організаціїї"])
+        entry2.grid(row=1, column=0, padx=10, pady=10)
 
-        btn2 = Button(new_window, text="valid", command=redact1)
-        btn2.grid(row=6, column=0, padx=10, pady=10)
+        entry3 = Entry(new_window)
+        entry3.delete(0, tk.END)
+        entry3.insert(0, contact_info.iloc[0]["Відділ"])
+        entry3.grid(row=2, column=0, padx=10, pady=10)
 
-        label5 = Label(new_window, text = "d")
-        label5.grid(row=7, column=0, padx=10, pady=10)
+        entry4 = Entry(new_window)
+        entry4.delete(0, tk.END)
+        entry4.insert(0, contact_info.iloc[0]["Посада"])
+        entry4.grid(row=3, column=0, padx=10, pady=10)
+
+        entry5 = Entry(new_window)
+        entry5.delete(0, tk.END)
+        entry5.insert(0, contact_info.iloc[0]["Прізвище, Ім'я"])
+        entry5.grid(row=4, column=0, padx=10, pady=10)
+
+        entry6 = Entry(new_window)
+        entry6.delete(0, tk.END)
+        entry6.insert(0, contact_info.iloc[0]["Номер"])
+        entry6.grid(row=5, column=0, padx=10, pady=10)
+
+        entry7 = Entry(new_window)
+        entry7.delete(0, tk.END)
+        entry7.insert(0, contact_info.iloc[0]["ел-пошта"])
+        entry7.grid(row=6, column=0, padx=10, pady=10)
+        
+        btn1 = Button(new_window, text="Зберегти зміни", command=redact1)
+        btn1.grid(row=7, column=0, padx=10, pady=10)
 
 def back_to_main():
     new_window.destroy()
@@ -252,7 +322,6 @@ menu_bar = tk.Menu(root)
 
 function_menu = tk.Menu(menu_bar, tearoff=0)
 function_menu.add_command(label="Додати новий контакт", command=add_contact)
-function_menu.add_command(label="Редагувати контакт", command=redact)
 function_menu.add_command(label="Перегляд довідника", command=show_contact)
 function_menu.add_command(label="Видалити контакт", command=delete_func)
 menu_bar.add_cascade(label="Дії", menu=function_menu)
