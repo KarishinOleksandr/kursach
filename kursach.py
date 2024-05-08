@@ -174,7 +174,20 @@ def delete_func():
     
 
 def help_func():
-    messagebox.showinfo(title="saygex", message="довідка")
+    messagebox.showinfo(title="Довідка по додатку", message="Вітаю тебе, користувач!! \n"
+                        "\n"
+                        "Цей додаток призначається для побудови зручного введення корпоративної бази данних, а саме телефонного довіднику. \n"
+                        "\n"
+                        "Довідник має функції пошуку, додавання, видалення та редагування контактів. Звичайно, є функція перегляду всієї бази даннихю \n"
+                        "\n"
+                        "Головне меню це функція нашого пошуку, вам необхідно ввести прізвище з ім'ям/номер телефону/ел-пошту користувача для того щоб знайти його данні. \n"
+                        "\n"
+                        "ЗВЕРНІТЬ УВАГУ, НЕОБХІДНО ВВОДИТИ ПОВНІСТЮ ІМ'Я ТА ПРІЗВИЩЕ, ЯКЩО Є 'ПО-БАТЬКОВІ', ЙОГО ТАКОЖ ТРЕБА ВВЕСТИ ДОТРИМУЮЧИСЬ КОРЕКТНОГО РЕГІСТРУ!!!"
+                        "\n"
+                        "Для виклику всіх інших функцій необхідно вибрати пункт меню 'дії' та прослідувати підказкам на екрані. \n"
+                        "\n"
+                        "Не хвивлюйтесь, для повернення в головне меню просто необхідно знову нажати 'Дії' та вибрати повернутись до пошуку.")
+    
 
 def find_contact():
     global contact_found, contact_info
@@ -259,38 +272,50 @@ def redact():
 
 
     if contact_found:
+        label1 = Label(new_window, text="Назва організації:")
+        label1.place(x=150, y=5)
         entry2 = Entry(new_window)
         entry2.delete(0, tk.END)
         entry2.insert(0, contact_info.iloc[0]["Назва організаціїї"])
-        entry2.grid(row=1, column=0, padx=10, pady=10)
+        entry2.place(x=275, y=5)
 
+        label2 = Label(new_window, text="Відділ:")
+        label2.place(x=150, y=50)
         entry3 = Entry(new_window)
         entry3.delete(0, tk.END)
         entry3.insert(0, contact_info.iloc[0]["Відділ"])
-        entry3.grid(row=2, column=0, padx=10, pady=10)
+        entry3.place(x=275, y=50)
 
+        label3 = Label(new_window, text="Посада:")
+        label3.place(x=150, y=95)
         entry4 = Entry(new_window)
         entry4.delete(0, tk.END)
         entry4.insert(0, contact_info.iloc[0]["Посада"])
-        entry4.grid(row=3, column=0, padx=10, pady=10)
+        entry4.place(x=275, y=95)
 
+        label4 = Label(new_window, text="Прізвище та ім'я:")
+        label4.place(x=150, y=140)
         entry5 = Entry(new_window)
         entry5.delete(0, tk.END)
         entry5.insert(0, contact_info.iloc[0]["Прізвище, Ім'я"])
-        entry5.grid(row=4, column=0, padx=10, pady=10)
+        entry5.place(x=275, y=140)
 
+        label5 = Label(new_window, text="Номер телефону:")
+        label5.place(x=150, y=185)
         entry6 = Entry(new_window)
         entry6.delete(0, tk.END)
         entry6.insert(0, contact_info.iloc[0]["Номер"])
-        entry6.grid(row=5, column=0, padx=10, pady=10)
+        entry6.place(x=275, y=185)
 
+        label6 = Label(new_window, text="Ел-пошта:")
+        label6.place(x=150, y=230)
         entry7 = Entry(new_window)
         entry7.delete(0, tk.END)
         entry7.insert(0, contact_info.iloc[0]["ел-пошта"])
-        entry7.grid(row=6, column=0, padx=10, pady=10)
+        entry7.place(x=275, y=230)
         
         btn1 = Button(new_window, text="Зберегти зміни", command=redact1)
-        btn1.grid(row=7, column=0, padx=10, pady=10)
+        btn1.place(x=250, y=275)
 
 def back_to_main():
     new_window.destroy()
@@ -318,10 +343,6 @@ class NewWindow(tk.Tk):
         menu_bar = tk.Menu(self)
 
         function_menu = tk.Menu(menu_bar, tearoff=0)
-        function_menu.add_command(label="Додати новий контакт", command=add_contact)
-        function_menu.add_command(label="Перегляд довідника", command=show_contact)
-        function_menu.add_command(label="Видалити контакт", command=delete_func)
-        function_menu.add_separator()
         function_menu.add_command(label="Повернутися до пошуку", command=back_to_main)
         menu_bar.add_cascade(label="Дії", menu=function_menu)
 
