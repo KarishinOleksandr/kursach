@@ -22,11 +22,15 @@ if 'nameSet' in df.columns and 'keyWords' in df.columns:
 df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
 contact_found = False
 
+
 def add_contact():
     root.withdraw()
     global new_window
     new_window = NewWindow()
+    new_window.title("Додавання контакту")
+
     def add1():
+        df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
         pattern2 = re.compile(r'\b[A-Za-z]\w*@[A-Za-z]+\.[A-Za-z]{2,}\b')
         data_to_append = [
             entry1.get(), entry2.get(), entry3.get(), entry4.get(), entry5.get(), entry6.get()
@@ -42,7 +46,7 @@ def add_contact():
             return
 
         existing_data = []
-        entry5_value = entry5.get()  # Отримати значення з Entry5
+        entry5_value = entry5.get()
         phone_numbers = entry5_value.split(",")
         for phone_number in phone_numbers:
             digits_only = re.sub(r'\D', '', phone_number)
@@ -63,27 +67,41 @@ def add_contact():
             writer = csv.writer(f, delimiter=';')
             writer.writerows(existing_data)
 
-    
+        messagebox.showinfo("Успіх!", "Контакт додано!")
+
+    label1 = Label(new_window, text="Назва організації:")
+    label1.place(x=150, y=5)
     entry1 = Entry(new_window)
-    entry1.grid(row=0, column=1, pady=10, padx=10)
+    entry1.place(x=275, y=5)
+    label2 = Label(new_window, text="Відділ:")
+    label2.place(x=150, y=50)
     entry2 = Entry(new_window)
-    entry2.grid(row=1, column=1, pady=10, padx=10)
+    entry2.place(x=275, y=50)
+    label3 = Label(new_window, text="Посада:")
+    label3.place(x=150, y=95)
     entry3 = Entry(new_window)
-    entry3.grid(row=2, column=1, pady=10, padx=10)
+    entry3.place(x=275, y=95)
+    label4 = Label(new_window, text="Прізвище та ім'я:")
+    label4.place(x=150, y=140)
     entry4 = Entry(new_window)
-    entry4.grid(row=3, column=1, pady=10, padx=10)
+    entry4.place(x=275, y=140)
+    label5 = Label(new_window, text="Номер телефону:")
+    label5.place(x=150, y=185)
     entry5 = Entry(new_window)
-    entry5.grid(row=4, column=1, pady=10, padx=10)
+    entry5.place(x=275, y=185)
+    label6 = Label(new_window, text="Ел-пошта:")
+    label6.place(x=150, y=230)
     entry6 = Entry(new_window)
-    entry6.grid(row=5, column=1, pady=10, padx=10)
+    entry6.place(x=275, y=230)
     bitn1 = Button(new_window, text="Додати", command=add1)
-    bitn1.grid(row=7, column=1, pady=10, padx=10)
+    bitn1.place(x=250, y=275)
 
 
 def show_contact():
     root.withdraw()
     global new_window
     new_window = NewWindow()
+    new_window.title("Список контактів")
     df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
     
     sorted_df = df.sort_values("fullName")
@@ -123,11 +141,11 @@ def delete_func():
     root.withdraw()
     global new_window
     new_window = NewWindow()
-    
+    new_window.title("Видалення контакту")
+
     def delete1():
         data_to_search = entry2.get()
         if data_to_search:
-            # Пошук рядків, що відповідають умові
             if data_to_search in df["fullName"].values:
                 df.drop(df[df["fullName"] == data_to_search].index, inplace=True)
             elif data_to_search in df["phone"].values:
@@ -142,15 +160,17 @@ def delete_func():
         else:
             label3.config(text="Введіть дані для пошуку")
 
+    label42 = Label(new_window, text="Введіть прізвизе з ім'ям/номер/ел-пошту")
+    label42.place(x=175, y=70)
 
     entry2 = Entry(new_window)
-    entry2.grid(row=1, column=0, padx=10, pady=10)
+    entry2.place(x=225, y=40)
 
-    btn1 = Button(new_window, text="Validate", command=delete1)
-    btn1.grid(row=2, column=0, padx=10, pady=10)
+    btn1 = Button(new_window, text="Видалити контакт", command=delete1)
+    btn1.place(x=230, y=100)
 
     label3 = Label(new_window, text="")
-    label3.grid(row=3, column=0, padx=10, pady=10)
+    label3.place(x=100, y=150)
     
 
 def help_func():
@@ -189,6 +209,7 @@ def redact():
     root.withdraw()
     global new_window
     new_window = NewWindow()
+    new_window.title("Редагування контакту")
     global entry_prof, label4, contact_found, contact_info
     
     def redact1():
@@ -207,7 +228,7 @@ def redact():
             return
         
         existing_data = []
-        entry6_value = entry6.get()  # Отримати значення з Entry5
+        entry6_value = entry6.get()
         phone_numbers = entry6_value.split(",")
         for phone_number in phone_numbers:
             digits_only = re.sub(r'\D', '', phone_number)
@@ -221,18 +242,15 @@ def redact():
         with open(local_filename, "r", encoding="utf-8") as f:
             existing_data = [line.strip().split(';') for line in f.readlines()]
         
-        # Знайти попередній рядок для видалення
         row_to_delete = None
         for i, row in enumerate(existing_data):
-            if row[:3] == contact_info1[:3]:  # Шукаємо рядок, який має ті ж перші три елементи
+            if row[:3] == contact_info1[:3]:
                 row_to_delete = i
                 break
         
-        # Якщо знайдено рядок для видалення, видаляємо його
         if row_to_delete is not None:
             del existing_data[row_to_delete]
         
-        # Додати новий рядок з інформацією про контакт
         existing_data.append(contact_info1)
         
         with open(local_filename, "w", encoding="utf-8", newline="") as f:
@@ -280,16 +298,16 @@ def back_to_main():
 
 def update():
     global root
-
-    btn1 = Button(root, text="Redact", command=redact)
-    btn1.grid(row=3, column=2, pady=10, padx=10)
+    btn1 = Button(root, text="Редагувати контакт", command=redact)
+    btn1.place(x=240, y=300)
 
 
 class NewWindow(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Нове вікно")
-        self.geometry("800x400") 
+        self.geometry("600x400") 
+        self.resizable(False, False)
 
         def on_closing():
             self.destroy()
@@ -301,7 +319,6 @@ class NewWindow(tk.Tk):
 
         function_menu = tk.Menu(menu_bar, tearoff=0)
         function_menu.add_command(label="Додати новий контакт", command=add_contact)
-        function_menu.add_command(label="Редагувати контакт", command=redact)
         function_menu.add_command(label="Перегляд довідника", command=show_contact)
         function_menu.add_command(label="Видалити контакт", command=delete_func)
         function_menu.add_separator()
@@ -316,7 +333,8 @@ class NewWindow(tk.Tk):
 
 root = tk.Tk()
 root.title("Телефонний довідник")
-root.geometry("300x200")  
+root.geometry("600x400")
+root.resizable(False, False)
 
 menu_bar = tk.Menu(root)
 
@@ -330,14 +348,20 @@ help_menu = tk.Menu(menu_bar, tearoff=0)
 help_menu.add_command(label="Довідка", command=help_func)
 menu_bar.add_cascade(label="Довідка", menu=help_menu)
 
-entry_prof = Entry(root)
-entry_prof.grid(row=0, column=1, pady=10, padx=10)
+label_start = Label(root, text="Вітаю, користувач!")
+label_start.place(x=230, y=5)
 
-button1 = Button(root, text="Validate", command=find_contact)
-button1.grid(row=3, column=1, pady=10, padx=10)
+entry_prof = Entry(root)
+entry_prof.place(x=225, y=40)
+
+label41 = Label(root, text="Введіть прізвизе з ім'ям/номер/ел-пошту")
+label41.place(x=175, y=70)
+
+button1 = Button(root, text="Знайти контакт", command=find_contact)
+button1.place(x=240, y=100)
 
 label4 = Label(root, text="")
-label4.grid(row=4,column=1, pady=10, padx=10)
+label4.place(x=130, y=150)
 
 root.config(menu=menu_bar)
 root.mainloop()
