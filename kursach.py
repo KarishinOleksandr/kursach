@@ -44,10 +44,16 @@ def add_contact():
         if data_to_append[3] in df["fullName"].values:
             messagebox.showerror("Помилка", "Контак з таким ім'ям вже існує")
             return
+        if data_to_append[4] in df["phone"].values:
+            messagebox.showerror("Помилка", "Контак з таким номером вже існує")
+            return
+        if data_to_append[5] in df["email"].values:
+            messagebox.showerror("Помилка", "Контак з такою поштою вже існує")
+            return
 
         existing_data = []
         entry5_value = entry5.get()
-        phone_numbers = entry5_value.split(",")
+        phone_numbers = entry5_value.split(", ")
         for phone_number in phone_numbers:
             digits_only = re.sub(r'\D', '', phone_number)
             if not len(digits_only) in [10, 12] or (len(digits_only) == 12 and not digits_only.startswith('380')):
@@ -182,7 +188,7 @@ def help_func():
                         "\n"
                         "Головне меню це функція нашого пошуку, вам необхідно ввести прізвище з ім'ям/номер телефону/ел-пошту користувача для того щоб знайти його данні. \n"
                         "\n"
-                        "ЗВЕРНІТЬ УВАГУ, НЕОБХІДНО ВВОДИТИ ПОВНІСТЮ ІМ'Я ТА ПРІЗВИЩЕ, ЯКЩО Є 'ПО-БАТЬКОВІ', ЙОГО ТАКОЖ ТРЕБА ВВЕСТИ ДОТРИМУЮЧИСЬ КОРЕКТНОГО РЕГІСТРУ!!!"
+                        "ЗВЕРНІТЬ УВАГУ, НЕОБХІДНО ВВОДИТИ ПОВНІСТЮ ІМ'Я ТА ПРІЗВИЩЕ, ЯКЩО Є 'ПО-БАТЬКОВІ', ЙОГО ТАКОЖ ТРЕБА ВВЕСТИ ДОТРИМУЮЧИСЬ КОРЕКТНОГО РЕГІСТРУ!!! \n"
                         "\n"
                         "Для виклику всіх інших функцій необхідно вибрати пункт меню 'дії' та прослідувати підказкам на екрані. \n"
                         "\n"
