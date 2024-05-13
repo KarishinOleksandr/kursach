@@ -148,6 +148,7 @@ def delete_func():
     global new_window
     new_window = NewWindow()
     new_window.title("Видалення контакту")
+    df = pd.read_csv(local_filename, delimiter=';', encoding='utf-8', dtype={'phone': 'str'})
 
     def delete1():
         data_to_search = entry2.get()
@@ -163,6 +164,8 @@ def delete_func():
                 return
             
             df.to_csv(local_filename, sep=';', encoding='utf-8', index=False)
+
+            messagebox.showinfo("Успіх!", "Контакт видалено!")    
         else:
             label3.config(text="Введіть дані для пошуку")
 
@@ -182,7 +185,7 @@ def delete_func():
 def help_func():
     messagebox.showinfo(title="Довідка по додатку", message="Вітаю тебе, користувач!! \n"
                         "\n"
-                        "Цей додаток призначається для побудови зручного введення корпоративної бази данних, а саме телефонного довіднику. \n"
+                        "Цей додаток призначається для зручного введення корпоративної бази данних, а саме телефонного довіднику. \n"
                         "\n"
                         "Довідник має функції пошуку, додавання, видалення та редагування контактів. Звичайно, є функція перегляду всієї бази даннихю \n"
                         "\n"
@@ -211,7 +214,7 @@ def find_contact():
             return
 
         contact_info = contact_info.rename(columns={"nameОrganization": "Назва організаціїї", "nameDepartment": "Відділ", "jobTitle": "Посада", "fullName": "Прізвище, Ім'я", "phone": "Номер", "email": "ел-пошта"})
-        
+
         text_output = ""
         for index, row in contact_info.iterrows():
             for column, value in row.items():
@@ -242,9 +245,7 @@ def redact():
         if not contact_info1[3]:
             messagebox.showerror("Помилка", "Обов'язково введіть ім'я")
             return
-        if contact_info1[3] in df["fullName"].values:
-            messagebox.showerror("Помилка", "Контакт з таким ім'ям вже існує")
-            return
+        
         
         existing_data = []
         entry6_value = entry6.get()
@@ -263,7 +264,7 @@ def redact():
         
         row_to_delete = None
         for i, row in enumerate(existing_data):
-            if row[:3] == contact_info1[:3]:
+            if row[0] == contact_info1[0] or row[1] == contact_info1[1] or row[2] == contact_info1[2] or row[3] == contact_info1[3] or row[4] == contact_info1[4] or row[5] == contact_info1[5]:
                 row_to_delete = i
                 break
         
@@ -275,6 +276,8 @@ def redact():
         with open(local_filename, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f, delimiter=';')
             writer.writerows(existing_data)
+
+        messagebox.showinfo("Успіх!", "Контакт змінено!")    
 
 
     if contact_found:
